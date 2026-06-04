@@ -4,8 +4,7 @@ import requests
 import sqlite3
 import os
 from datetime import datetime
-import google.generativeai as genai
-import google.generativeai as genai
+import anthropic
 
 app = Flask(__name__)
 
@@ -29,12 +28,7 @@ def init_db():
 
 init_db()
 
-app = Flask(__name__)
-
 def scrape_article(url):
-    """
-    Jina Reader API를 사용하여 본문 추출.
-    """
     try:
         jina_url = f"https://r.jina.ai/{url}"
         headers = {
@@ -47,7 +41,6 @@ def scrape_article(url):
         if not markdown:
             return {"error": "본문을 추출할 수 없습니다."}
 
-        # 마크다운 파싱: 첫 번째 # 라인을 제목으로
         lines = markdown.split('\n')
         title = "제목 없음"
         text = markdown
@@ -57,14 +50,13 @@ def scrape_article(url):
                 text = '\n'.join(lines[i+1:]).strip()
                 break
 
-        # 요약 생성
         summary = text[:300] + "..." if len(text) > 300 else text
 
         return {
             "title": title,
             "summary": summary,
             "text": text,
-            "image": "",  # Jina는 이미지 제공 안 함
+            "image": "",
             "source": "jina"
         }
 
@@ -117,6 +109,7 @@ def save_insight():
 
     return jsonify({"message": "저장되었습니다."})
 
+
 @app.route("/api/update_insight", methods=["POST"])
 def update_insight():
     data = request.get_json()
@@ -135,6 +128,7 @@ def update_insight():
 
     return jsonify({"message": "수정되었습니다."})
 
+
 @app.route("/api/delete_insight/<int:id>", methods=["DELETE"])
 def delete_insight(id):
     db_path = os.path.join(os.path.dirname(__file__), 'insight_log.db')
@@ -146,6 +140,7 @@ def delete_insight(id):
 
     return jsonify({"message": "삭제되었습니다."})
 
+
 @app.route("/api/feedback", methods=["POST"])
 def get_feedback():
     data = request.get_json()
@@ -155,30 +150,23 @@ def get_feedback():
     if not summary or not insight:
         return jsonify({"error": "요약과 인사이트는 필수입니다."}), 400
 
-    # Gemini API 설정
-    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    
-    # 동적으로 사용 가능한 모델 찾기
-    available_model = None
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            available_model = m.name
-            print(f"✅ 자동으로 찾은 모델: {available_model}")
-            break
-    
-    if not available_model:
-        return jsonify({"error": "사용 가능한 Gemini 모델을 찾을 수 없습니다."}), 500
-    
-    model = genai.GenerativeModel(available_model)
+    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
     prompt = f"너는 날카롭고 통찰력 있는 사회학자이자 글쓰기 코치야. 다음 기사 내용과 나의 분석을 읽고, 내 생각의 논리적 허점을 짚어주거나 더 깊이 생각해 볼 만한 새로운 관점(질문)을 3줄 이내로 제시해 줘.\n\n기사 내용: {summary}\n\n나의 분석: {insight}"
 
     try:
-        response = model.generate_content(prompt)
-        feedback = response.text.strip()
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        feedback = message.content[0].text.strip()
         return jsonify({"feedback": feedback})
     except Exception as e:
         return jsonify({"error": f"AI 피드백 생성 중 오류: {str(e)}"}), 500
+
 
 @app.route("/archive")
 def archive():
