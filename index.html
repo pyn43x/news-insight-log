@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Insight Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "inverse-primary": "#e8eeff",
+          "surface": "#fafaf5",
+          "tertiary-fixed-dim": "#c3d3eb",
+          "on-surface-variant": "#5a6159",
+          "background": "#fafaf5",
+          "on-tertiary-fixed": "#303e52",
+          "tertiary": "#516075",
+          "outline": "#767c74",
+          "secondary-fixed-dim": "#cad5ec",
+          "on-tertiary-fixed-variant": "#4c5b6f",
+          "surface-container-low": "#f3f4ee",
+          "error-dim": "#4e0309",
+          "on-tertiary-container": "#425165",
+          "on-primary-container": "#4c525f",
+          "tertiary-container": "#d1e1fa",
+          "surface-variant": "#dee4da",
+          "on-error-container": "#752121",
+          "surface-container": "#ecefe7",
+          "on-primary-fixed": "#393f4c",
+          "on-surface": "#2e342d",
+          "surface-bright": "#fafaf5",
+          "outline-variant": "#aeb4aa",
+          "tertiary-dim": "#455468",
+          "primary-fixed": "#dde2f3",
+          "on-background": "#2e342d",
+          "surface-container-high": "#e5eae0",
+          "secondary": "#546073",
+          "error": "#9f403d",
+          "secondary-container": "#d8e3fa",
+          "on-secondary-fixed": "#354052",
+          "secondary-dim": "#495467",
+          "surface-dim": "#d5dcd0",
+          "on-primary": "#f7f7ff",
+          "error-container": "#fe8983",
+          "on-error": "#fff7f6",
+          "surface-tint": "#585e6c",
+          "tertiary-fixed": "#d1e1fa",
+          "primary-dim": "#4c5260",
+          "on-primary-fixed-variant": "#565b69",
+          "on-secondary-fixed-variant": "#515c6f",
+          "inverse-surface": "#0d0f0c",
+          "inverse-on-surface": "#9c9d99",
+          "secondary-fixed": "#d8e3fa",
+          "primary-container": "#dde2f3",
+          "surface-container-highest": "#dee4da",
+          "on-secondary-container": "#475265",
+          "surface-container-lowest": "#ffffff",
+          "primary-fixed-dim": "#cfd4e5",
+          "on-secondary": "#f8f8ff",
+          "on-tertiary": "#f7f9ff",
+          "primary": "#585e6c"
+        },
+        fontFamily: {
+          "headline": ["Manrope"],
+          "body": ["Manrope"],
+          "label": ["Inter"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  body { min-height: max(884px, 100dvh); }
+
+  /* ── 로딩 스피너 ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #f7f7ff;
+    border-radius: 9999px;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+
+  /* ── 카드 페이드인 ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  /* ── 에러 배너 ── */
+  #error-banner { display: none; }
+  #error-banner.show { display: flex; }
+
+  /* ── 스켈레톤 펄스 ── */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .skeleton { animation: pulse 1.4s ease-in-out infinite; }
+
+  /* ── 본문 스크롤 ── */
+  #article-body { max-height: 260px; overflow-y: auto; }
+  #article-body::-webkit-scrollbar { width: 4px; }
+  #article-body::-webkit-scrollbar-track { background: transparent; }
+  #article-body::-webkit-scrollbar-thumb { background: #aeb4aa; border-radius: 4px; }
+
+  /* 텍스트에리어 오토세이브 타임스탬프 */
+  #autosave-label { transition: opacity 0.3s; }
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary-container selection:text-on-primary-container">
+
+<!-- ── TopAppBar ── -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-[#fafaf5] bg-gradient-to-b from-[#fafaf5] to-transparent">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[#585e6c]">search</span>
+      <h1 class="text-2xl font-bold text-[#585e6c] tracking-tighter font-headline">Insight Log</h1>
+    </div>
+    <span class="material-symbols-outlined text-[#585e6c]">account_circle</span>
+  </div>
+</header>
+
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto space-y-10">
+
+  <!-- ── Screen Header ── -->
+  <section class="space-y-6">
+    <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface-variant">News Scrap</h2>
+
+    <!-- URL Input -->
+    <div class="flex gap-2">
+      <div class="relative flex-grow">
+        <input
+          id="url-input"
+          class="w-full h-12 px-5 bg-surface-container-highest rounded-xl border-none focus:ring-1 focus:ring-primary/40 font-label text-sm transition-all placeholder:text-on-surface-variant/50"
+          placeholder="기사 URL을 붙여넣으세요..."
+          type="url"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <button
+        id="analyze-btn"
+        onclick="analyzeURL()"
+        class="h-12 bg-primary text-on-primary rounded-xl font-label font-semibold text-sm hover:bg-primary-dim active:scale-95 transition-all shadow-sm whitespace-nowrap px-8 flex items-center gap-2"
+      >
+        <span id="btn-label">분석하기</span>
+        <span id="btn-spinner" class="spinner hidden"></span>
+      </button>
+    </div>
+
+    <!-- 에러 배너 -->
+    <div id="error-banner" class="items-center gap-3 bg-error-container/20 border border-error/20 rounded-xl px-5 py-3">
+      <span class="material-symbols-outlined text-error text-lg">error_outline</span>
+      <p id="error-msg" class="font-label text-sm text-error"></p>
+    </div>
+  </section>
+
+  <!-- ── Category Tags ── -->
+  <section class="overflow-x-auto no-scrollbar -mx-6 px-6">
+    <div class="flex gap-3 whitespace-nowrap pb-2" id="tag-bar">
+      <button onclick="filterTag(this)" class="tag-btn active-tag px-5 py-2 rounded-full bg-primary text-on-primary font-label text-xs font-semibold tracking-wide">전체</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">세계</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">IT</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">정치</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">사회</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">스포츠</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">경제</button>
+      <button onclick="toggleTag(this)" class="tag-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">생활/문화</button>
+    </div>
+  </section>
+
+  <!-- ── 스켈레톤 (로딩 중) ── -->
+  <div id="skeleton-card" class="hidden bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-[0.5px] border-outline-variant/10">
+    <div class="aspect-[16/9] w-full bg-surface-container skeleton"></div>
+    <div class="p-6 space-y-3">
+      <div class="h-3 w-24 bg-surface-container rounded skeleton"></div>
+      <div class="h-5 w-full bg-surface-container rounded skeleton"></div>
+      <div class="h-5 w-3/4 bg-surface-container rounded skeleton"></div>
+      <div class="h-4 w-full bg-surface-container rounded skeleton"></div>
+      <div class="h-4 w-5/6 bg-surface-container rounded skeleton"></div>
+    </div>
+  </div>
+
+  <!-- ── 결과 카드 ── -->
+  <article id="result-card" class="hidden fade-up bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-[0.5px] border-outline-variant/10">
+    <!-- 썸네일 -->
+    <div id="img-wrapper" class="aspect-[16/9] w-full bg-surface-container hidden">
+      <img id="result-image" alt="기사 썸네일" class="w-full h-full object-cover mix-blend-multiply opacity-90"/>
+    </div>
+    <!-- 텍스트 -->
+    <div class="p-6 space-y-4">
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span id="result-badge" class="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">뉴스</span>
+          <a id="result-link" href="#" target="_blank" rel="noopener"
+             class="flex items-center gap-1 font-label text-[10px] text-on-surface-variant/50 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-sm" style="font-size:14px">open_in_new</span>원문 보기
+          </a>
+        </div>
+        <h3 id="result-title" class="font-headline text-xl font-bold leading-tight text-on-surface"></h3>
+      </div>
+      <!-- 본문 (스크롤 가능) -->
+      <div id="article-body" class="text-on-surface-variant leading-relaxed text-sm space-y-2"></div>
+      <!-- 더보기 / 접기 -->
+      <button id="toggle-body" onclick="toggleBody()"
+        class="font-label text-xs text-primary/70 hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm" style="font-size:14px" id="toggle-icon">expand_more</span>
+        <span id="toggle-label">전체 본문 보기</span>
+      </button>
+    </div>
+  </article>
+
+  <!-- ── 기본 플레이스홀더 카드 ── -->
+  <article id="placeholder-card" class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-[0.5px] border-outline-variant/10">
+    <div class="aspect-[16/9] w-full bg-surface-container">
+      <img alt="News Thumbnail" class="w-full h-full object-cover mix-blend-multiply opacity-90"
+           src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiEiBUpPUFFeqyS-h3IknUr19H6GsUItwY0tJr3ig1TukFuk-cejnNtakGvzq1tyb6p6dnCNRBynNUWfWKP7ddidaUQ8Q3zF3z-ZrplwxOdO7KDFFet0351amvmPWXMwm_wZ9ZYGd9LwwsJsvIhXjTHpThT9jQQ7pNuT-Mu_U6vRcIKB-gx2OxEmmuvda5hL2NbmwdrO6ZUx11EfrkGTiDd5C1FP5QeOY2VtwDj6HcB_h3SDEg5hHTkwedEiYgY5nsSr29Tk7yvRXW"/>
+    </div>
+    <div class="p-6 space-y-4">
+      <div class="space-y-2">
+        <span class="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Global Intelligence</span>
+        <h3 class="font-headline text-xl font-bold leading-tight text-on-surface">The Future of Sustainable Urban Development</h3>
+      </div>
+      <p class="text-on-surface-variant leading-relaxed text-sm line-clamp-3">
+        위 입력창에 뉴스 기사 URL을 붙여넣고 <strong>분석하기</strong>를 누르면 제목과 본문을 자동으로 가져옵니다.
+      </p>
+    </div>
+  </article>
+
+  <!-- ── Insight Editor ── -->
+  <section class="space-y-4">
+    <div class="flex items-center gap-2 px-1">
+      <span class="material-symbols-outlined text-primary text-xl">edit_note</span>
+      <h4 class="font-label text-sm font-bold uppercase tracking-widest text-on-surface-variant">Personal Insights</h4>
+    </div>
+    <div class="relative group">
+      <textarea
+        id="insight-area"
+        oninput="scheduleAutosave()"
+        class="w-full min-h-[200px] p-6 bg-surface-container-low rounded-2xl border-none focus:ring-1 focus:ring-primary/20 font-body text-on-surface leading-relaxed resize-none transition-all"
+        placeholder="생각을 기록해 보세요..."></textarea>
+      <div id="autosave-label" class="absolute bottom-4 right-4 text-[10px] font-label font-medium text-on-surface-variant/40 tracking-wider">
+        AUTOSAVED
+      </div>
+    </div>
+    <button
+      id="save-btn"
+      onclick="saveInsight()"
+      class="w-full bg-primary text-on-primary rounded-xl font-label font-semibold text-sm hover:bg-primary-dim active:scale-95 transition-all shadow-sm py-3"
+    >
+      저장하기
+    </button>
+    <button
+      id="ai-feedback-btn"
+      onclick="getAIFeedback()"
+      class="w-full bg-secondary text-on-secondary rounded-xl font-label font-semibold text-sm hover:bg-secondary-dim active:scale-95 transition-all shadow-sm py-3 flex items-center justify-center gap-2"
+    >
+      <span id="ai-icon">✨</span>
+      <span id="ai-label">AI 첨삭 받기</span>
+      <span id="ai-spinner" class="spinner hidden"></span>
+    </button>
+    <div id="ai-feedback" class="hidden bg-surface-container rounded-xl p-4 mt-4 border-l-4 border-primary">
+      <p id="ai-feedback-text" class="text-on-surface text-sm"></p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── BottomNavBar ── -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-[#fafaf5]/80 backdrop-blur-md border-t-[0.5px] border-[#585e6c]/10 shadow-[0_-4px_24px_rgba(46,52,45,0.04)] z-50 rounded-t-2xl">
+  <a class="flex flex-col items-center justify-center text-[#585e6c] bg-[#585e6c]/5 rounded-xl px-4 py-1 active:scale-90 transition-transform" href="#">
+    <span class="material-symbols-outlined mb-0.5" style="font-variation-settings: 'FILL' 1;">newspaper</span>
+    <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">News Scrap</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-[#585e6c]/60 hover:bg-[#585e6c]/10 transition-all active:scale-90" href="#">
+    <span class="material-symbols-outlined mb-0.5">movie</span>
+    <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">Movie Log</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-[#585e6c]/60 hover:bg-[#585e6c]/10 transition-all active:scale-90" href="/archive">
+    <span class="material-symbols-outlined mb-0.5">history</span>
+    <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">My Records</span>
+  </a>
+</nav>
+
+<script>
+  let autosaveTimer = null;
+  let bodyExpanded = false;
+  let currentData = null;
+  let selectedTags = [];
+
+  // ── URL 분석 ──
+  async function analyzeURL() {
+    const input = document.getElementById('url-input');
+    const url = input.value.trim();
+    if (!url) { showError('URL을 입력해 주세요.'); return; }
+
+    setLoading(true);
+    hideError();
+    showSkeleton(true);
+    hideCards();
+
+    try {
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
+
+      if (data.error) { showError(data.error); showSkeleton(false); return; }
+      renderResult(data, url);
+    } catch (e) {
+      showError('서버에 연결할 수 없습니다. Flask 서버가 실행 중인지 확인하세요.');
+    } finally {
+      setLoading(false);
+      showSkeleton(false);
+    }
+  }
+
+  // ── 태그 토글 ──
+  function toggleTag(el) {
+    const tag = el.textContent;
+    if (selectedTags.includes(tag)) {
+      selectedTags = selectedTags.filter(t => t !== tag);
+      el.classList.remove('bg-primary', 'text-on-primary');
+      el.classList.add('bg-secondary-container', 'text-on-secondary-container');
+    } else {
+      selectedTags.push(tag);
+      el.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+      el.classList.add('bg-primary', 'text-on-primary');
+    }
+  }
+
+  // ── 인사이트 저장 ──
+  async function saveInsight() {
+    if (!currentData) { showError('먼저 기사를 분석해 주세요.'); return; }
+    const content = document.getElementById('insight-area').value.trim();
+    if (!content) { showError('내용을 입력해 주세요.'); return; }
+
+    try {
+      const res = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: document.getElementById('result-link').href,
+          title: currentData.title,
+          image: currentData.image,
+          summary: currentData.summary,
+          content: content,
+          tags: selectedTags.join(',')
+        }),
+      });
+      const data = await res.json();
+      if (data.error) { showError(data.error); return; }
+      alert('저장되었습니다!');
+    } catch (e) {
+      showError('저장 중 오류가 발생했습니다.');
+    }
+  }
+
+  async function getAIFeedback() {
+    if (!currentData) { showError('먼저 기사를 분석해 주세요.'); return; }
+    const summary = document.getElementById('article-body').innerText.trim();
+    if (!summary) { showError('요약이 없습니다.'); return; }
+    const insight = document.getElementById('insight-area').value.trim();
+    if (!insight) { showError('인사이트를 입력해 주세요.'); return; }
+
+    // 로딩 표시
+    const btn = document.getElementById('ai-feedback-btn');
+    const label = document.getElementById('ai-label');
+    const spinner = document.getElementById('ai-spinner');
+    btn.disabled = true;
+    label.textContent = '첨삭 중...';
+    spinner.classList.remove('hidden');
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: summary,
+          insight: insight
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        showError(data.error);
+        return;
+      }
+      // 피드백 표시
+      document.getElementById('ai-feedback-text').textContent = data.feedback;
+      document.getElementById('ai-feedback').classList.remove('hidden');
+    } catch (e) {
+      showError('AI 첨삭 중 오류가 발생했습니다.');
+    } finally {
+      // 로딩 해제
+      btn.disabled = false;
+      label.textContent = 'AI 첨삭 받기';
+      spinner.classList.add('hidden');
+    }
+  }
+
+  // 엔터키 지원
+  document.getElementById('url-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') analyzeURL();
+  });
+
+  function renderResult(data, url) {
+    currentData = data;  // 데이터 저장
+
+    // 이미지
+    const imgWrapper = document.getElementById('img-wrapper');
+    const img = document.getElementById('result-image');
+    if (data.image) {
+      img.src = data.image;
+      imgWrapper.classList.remove('hidden');
+    } else {
+      imgWrapper.classList.add('hidden');
+    }
+
+    // 제목
+    document.getElementById('result-title').textContent = data.title || '제목 없음';
+
+    // 원문 링크
+    document.getElementById('result-link').href = url;
+
+    // 본문 단락 (요약 우선)
+    updateBodyContent(false);
+
+    // 카드 표시
+    const card = document.getElementById('result-card');
+    card.classList.remove('hidden');
+    card.classList.add('fade-up');
+  }
+
+  function updateBodyContent(expanded) {
+    const body = document.getElementById('article-body');
+    body.innerHTML = '';
+    const content = expanded ? (currentData.text || '') : (currentData.summary || currentData.text || '');
+    const paragraphs = content.split('\n\n').filter(Boolean);
+    paragraphs.forEach(p => {
+      const el = document.createElement('p');
+      el.textContent = p;
+      body.appendChild(el);
+    });
+  }
+
+  function toggleBody() {
+    bodyExpanded = !bodyExpanded;
+    updateBodyContent(bodyExpanded);
+    const body = document.getElementById('article-body');
+    body.style.maxHeight = bodyExpanded ? 'none' : '260px';
+    document.getElementById('toggle-label').textContent = bodyExpanded ? '요약 보기' : '전체 본문 보기';
+    document.getElementById('toggle-icon').textContent = bodyExpanded ? 'expand_less' : 'expand_more';
+  }
+
+  // ── UI 헬퍼 ──
+  function setLoading(on) {
+    const btn = document.getElementById('analyze-btn');
+    const label = document.getElementById('btn-label');
+    const spinner = document.getElementById('btn-spinner');
+    btn.disabled = on;
+    label.textContent = on ? '분석 중...' : '분석하기';
+    spinner.classList.toggle('hidden', !on);
+  }
+
+  function showSkeleton(on) {
+    document.getElementById('skeleton-card').classList.toggle('hidden', !on);
+  }
+
+  function hideCards() {
+    document.getElementById('result-card').classList.add('hidden');
+    document.getElementById('placeholder-card').classList.add('hidden');
+  }
+
+  function showError(msg) {
+    const banner = document.getElementById('error-banner');
+    document.getElementById('error-msg').textContent = msg;
+    banner.classList.add('show');
+  }
+
+  function hideError() {
+    document.getElementById('error-banner').classList.remove('show');
+  }
+
+  // ── 태그 필터 (UI 토글만) ──
+  function filterTag(el) {
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+      btn.classList.remove('bg-primary', 'text-on-primary', 'active-tag');
+      btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+    });
+    el.classList.add('bg-primary', 'text-on-primary', 'active-tag');
+    el.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+  }
+
+  // ── 오토세이브 ──
+  function scheduleAutosave() {
+    clearTimeout(autosaveTimer);
+    const label = document.getElementById('autosave-label');
+    label.style.opacity = '0.2';
+    autosaveTimer = setTimeout(() => {
+      const text = document.getElementById('insight-area').value;
+      localStorage.setItem('insight_draft', text);
+      const now = new Date();
+      const hhmm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      label.textContent = `AUTOSAVED AT ${hhmm}`;
+      label.style.opacity = '1';
+    }, 1500);
+  }
+
+  // 페이지 로드 시 저장된 draft 복원
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('insight_draft');
+    if (saved) document.getElementById('insight-area').value = saved;
+  });
+</script>
+</body>
+</html>

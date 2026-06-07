@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Records - Insight Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "inverse-primary": "#e8eeff",
+          "surface": "#fafaf5",
+          "tertiary-fixed-dim": "#c3d3eb",
+          "on-surface-variant": "#5a6159",
+          "background": "#fafaf5",
+          "on-tertiary-fixed": "#303e52",
+          "tertiary": "#516075",
+          "outline": "#767c74",
+          "secondary-fixed-dim": "#cad5ec",
+          "on-tertiary-fixed-variant": "#4c5b6f",
+          "surface-container-low": "#f3f4ee",
+          "error-dim": "#4e0309",
+          "on-tertiary-container": "#425165",
+          "on-primary-container": "#4c525f",
+          "tertiary-container": "#d1e1fa",
+          "surface-variant": "#dee4da",
+          "on-error-container": "#752121",
+          "surface-container": "#ecefe7",
+          "on-primary-fixed": "#393f4c",
+          "on-surface": "#2e342d",
+          "surface-bright": "#fafaf5",
+          "outline-variant": "#aeb4aa",
+          "tertiary-dim": "#455468",
+          "primary-fixed": "#dde2f3",
+          "on-background": "#2e342d",
+          "surface-container-high": "#e5eae0",
+          "secondary": "#546073",
+          "error": "#9f403d",
+          "secondary-container": "#d8e3fa",
+          "on-secondary-fixed": "#354052",
+          "secondary-dim": "#495467",
+          "surface-dim": "#d5dcd0",
+          "on-primary": "#f7f7ff",
+          "error-container": "#fe8983",
+          "on-error": "#fff7f6",
+          "surface-tint": "#585e6c",
+          "tertiary-fixed": "#d1e1fa",
+          "primary-dim": "#4c5260",
+          "on-primary-fixed-variant": "#565b69",
+          "on-secondary-fixed-variant": "#515c6f",
+          "inverse-surface": "#0d0f0c",
+          "inverse-on-surface": "#9c9d99",
+          "secondary-fixed": "#d8e3fa",
+          "primary-container": "#dde2f3",
+          "surface-container-highest": "#dee4da",
+          "on-secondary-container": "#475265",
+          "surface-container-lowest": "#ffffff",
+          "primary-fixed-dim": "#cfd4e5",
+          "on-secondary": "#f8f8ff",
+          "on-tertiary": "#f7f9ff",
+          "primary": "#585e6c"
+        },
+        fontFamily: {
+          "headline": ["Manrope"],
+          "body": ["Manrope"],
+          "label": ["Inter"]
+        },
+        borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+      },
+    },
+  }
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  body { min-height: max(884px, 100dvh); }
+
+  /* ── Fade In Animation ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+</style>
+</head>
+<body class="bg-surface text-on-surface font-body">
+
+<!-- ── TopAppBar ── -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-[#fafaf5] bg-gradient-to-b from-[#fafaf5] to-transparent">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-[#585e6c]">history</span>
+      <h1 class="text-2xl font-bold text-[#585e6c] tracking-tighter font-headline">My Records</h1>
+    </div>
+    <a href="/" class="text-[#585e6c] hover:text-primary transition-colors">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+  </div>
+</header>
+
+<main class="pt-24 pb-32 px-6 max-w-4xl mx-auto space-y-10">
+
+  <!-- ── Screen Header ── -->
+  <section class="space-y-6">
+    <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface-variant">저장된 인사이트</h2>
+
+    <!-- ── Filter Buttons ── -->
+    <div class="overflow-x-auto no-scrollbar">
+      <div class="flex gap-3 whitespace-nowrap" id="filter-buttons">
+        <button onclick="filterByTag('')" class="filter-btn active-filter px-5 py-2 rounded-full bg-primary text-on-primary font-label text-xs font-semibold tracking-wide">전체</button>
+        <button onclick="filterByTag('세계')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">세계</button>
+        <button onclick="filterByTag('IT')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">IT</button>
+        <button onclick="filterByTag('정치')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">정치</button>
+        <button onclick="filterByTag('사회')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">사회</button>
+        <button onclick="filterByTag('스포츠')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">스포츠</button>
+        <button onclick="filterByTag('경제')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">경제</button>
+        <button onclick="filterByTag('생활/문화')" class="filter-btn px-5 py-2 rounded-full bg-secondary-container text-on-secondary-container font-label text-xs font-medium tracking-wide hover:bg-surface-container-high transition-colors">생활/문화</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Insights Grid ── -->
+  <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="insights-grid">
+    {% for insight in insights %}
+    <article class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-[0.5px] border-outline-variant/10">
+      {% if insight.image %}
+      <div class="aspect-[16/9] w-full bg-surface-container">
+        <img alt="기사 썸네일" class="w-full h-full object-cover mix-blend-multiply opacity-90" src="{{ insight.image }}"/>
+      </div>
+      {% endif %}
+      <div class="p-6 space-y-4">
+        <div class="space-y-2">
+          {% if insight.tags %}
+          <span class="font-label text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">{{ insight.tags }}</span>
+          {% endif %}
+          <h3 class="font-headline text-xl font-bold leading-tight text-on-surface">{{ insight.title or '제목 없음' }}</h3>
+        </div>
+        <p class="text-on-surface-variant leading-relaxed text-sm line-clamp-3" id="content-{{ insight.id }}">{{ insight.content }}</p>
+        <div class="flex justify-between items-center text-xs text-on-surface-variant/50">
+          <span>{{ insight.created_at[:10] }}</span>
+          <div class="flex gap-2">
+            <button onclick="editInsight({{ insight.id }})" class="text-primary hover:text-primary-dim transition-colors">
+              <span class="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button onclick="deleteInsight({{ insight.id }})" class="text-error hover:text-error-dim transition-colors">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+            <a href="{{ insight.url }}" target="_blank" rel="noopener" class="hover:text-primary transition-colors">
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </section>
+
+  {% if not insights %}
+  <div class="text-center py-20">
+    <span class="material-symbols-outlined text-6xl text-on-surface-variant/30">history</span>
+    <p class="mt-4 text-on-surface-variant">저장된 인사이트가 없습니다.</p>
+  </div>
+  {% endif %}
+
+</main>
+
+<!-- ── BottomNavBar ── -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-[#fafaf5]/80 backdrop-blur-md border-t-[0.5px] border-[#585e6c]/10 shadow-[0_-4px_24px_rgba(46,52,45,0.04)] z-50 rounded-t-2xl">
+  <a class="flex flex-col items-center justify-center text-[#585e6c]/60 hover:bg-[#585e6c]/10 transition-all active:scale-90" href="/">
+    <span class="material-symbols-outlined mb-0.5">newspaper</span>
+    <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">News Scrap</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-[#585e6c]/60 hover:bg-[#585e6c]/10 transition-all active:scale-90" href="#">
+    <span class="material-symbols-outlined mb-0.5">movie</span>
+    <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">Movie Log</span>
+  </a>
+  <a class="flex flex-col items-center justify-center text-[#585e6c] bg-[#585e6c]/5 rounded-xl px-4 py-1 active:scale-90 transition-transform" href="/archive">
+    <span class="material-symbols-outlined mb-0.5" style="font-variation-settings: 'FILL' 1;">history</span>
+    <span class="font-['Inter'] text-[11px] font-medium uppercase tracking-wider">My Records</span>
+  </a>
+</nav>
+
+<script>
+  let currentFilter = '';
+
+  function filterByTag(tag) {
+    currentFilter = tag;
+    const articles = document.querySelectorAll('#insights-grid article');
+    articles.forEach(article => {
+      const tags = article.querySelector('span')?.textContent || '';
+      if (tag === '' || tags.includes(tag)) {
+        article.style.display = 'block';
+        article.style.animation = 'fadeIn 0.3s ease';
+      } else {
+        article.style.display = 'none';
+      }
+    });
+
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('bg-primary', 'text-on-primary', 'active-filter');
+      btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+    });
+    event.target.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+    event.target.classList.add('bg-primary', 'text-on-primary', 'active-filter');
+  }
+
+  async function editInsight(id) {
+    const contentEl = document.getElementById(`content-${id}`);
+    const originalContent = contentEl.textContent;
+
+    // Replace with textarea
+    contentEl.innerHTML = `
+      <textarea class="w-full p-2 border rounded" rows="4">${originalContent}</textarea>
+      <div class="flex gap-2 mt-2">
+        <button onclick="saveEdit(${id})" class="bg-primary text-on-primary px-3 py-1 rounded text-sm">저장</button>
+        <button onclick="cancelEdit(${id}, '${originalContent.replace(/'/g, "\\'")}')" class="bg-secondary text-on-secondary px-3 py-1 rounded text-sm">취소</button>
+      </div>
+    `;
+  }
+
+  async function saveEdit(id) {
+    const textarea = document.querySelector(`#content-${id} textarea`);
+    const newContent = textarea.value.trim();
+
+    if (!newContent) {
+      alert('내용을 입력해 주세요.');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/update_insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, content: newContent }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      // Update the display
+      document.getElementById(`content-${id}`).textContent = newContent;
+    } catch (e) {
+      alert('수정 중 오류가 발생했습니다.');
+    }
+  }
+
+  function cancelEdit(id, originalContent) {
+    document.getElementById(`content-${id}`).textContent = originalContent;
+  }
+
+  async function deleteInsight(id) {
+    if (!confirm('정말 이 기록을 삭제하시겠습니까?')) return;
+
+    try {
+      const res = await fetch(`/api/delete_insight/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      // Remove the article
+      document.querySelector(`#content-${id}`).closest('article').remove();
+    } catch (e) {
+      alert('삭제 중 오류가 발생했습니다.');
+    }
+  }
+</script>
+
+</body>
+</html>
