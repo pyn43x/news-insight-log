@@ -5,6 +5,7 @@ import sqlite3
 import os
 from datetime import datetime
 import anthropic
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
@@ -28,8 +29,24 @@ def init_db():
 
 init_db()
 
+def resolve_naver_url(url):
+    """네이버 뉴스 URL을 원본 기사 URL로 변환"""
+    try:
+        resp = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+        soup = BeautifulSoup(resp.text, 'html.parser')
+        canonical = soup.find('link', rel='canonical')
+        if canonical and canonical.get('href'):
+            return canonical['href']
+    except:
+        pass
+    return url
+
 def scrape_article(url):
     try:
+        # 네이버 뉴스 URL이면 원본으로 변환
+        if 'n.news.naver.com' in url or 'news.naver.com' in url:
+            url = resolve_naver_url(url)
+
         jina_url = f"https://r.jina.ai/{url}"
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -44,11 +61,34 @@ def scrape_article(url):
         lines = markdown.split('\n')
         title = "제목 없음"
         text = markdown
-        for i, line in enumerate(lines):
-            if line.startswith('# '):
-                title = line[2:].strip()
-                text = '\n'.join(lines[i+1:]).strip()
+
+        # Jina 메타데이터에서 Title 먼저 추출
+        for line in lines:
+            if line.startswith('Title:'):
+                title = line[6:].strip()
                 break
+
+        # Title 없으면 # 또는 ## 헤딩에서 추출
+        if title == "제목 없음":
+            for i, line in enumerate(lines):
+                if line.startswith('# ') or line.startswith('## '):
+                    title = line.lstrip('#').strip()
+                    text = '\n'.join(lines[i+1:]).strip()
+                    break
+
+        # 이미지, URL, 메타데이터 라인 제거
+        filtered_lines = []
+        for line in lines:
+            if line.startswith('!['):  # 이미지 제거
+                continue
+            if line.startswith('URL Source:'):  # URL 메타데이터 제거
+                continue
+            if line.startswith('Published Time:'):  # 날짜 메타데이터 제거
+                continue
+            if line.startswith('Title:'):  # Title 메타데이터 제거 (이미 추출했으므로)
+                continue
+            filtered_lines.append(line)
+        text = '\n'.join(filtered_lines).strip()
 
         summary = text[:300] + "..." if len(text) > 300 else text
 
