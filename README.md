@@ -17,6 +17,6 @@ claude를 이용한 바이브 코딩으로 구현했습니다.
 ## 실행 방법
 ```bash
 pip install -r requirements.txt
-export CLAUDE_API_KEY=your_api_key_here
+export ANTHROPIC_API_KEY=your_api_key_here
 python app.py
 ```
